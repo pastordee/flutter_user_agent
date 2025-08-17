@@ -11,20 +11,36 @@ import android.webkit.WebView;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.flutter.plugin.common.MethodCall;
+import androidx.annotation.NonNull;
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /** FlutterUserAgentPlugin */
 public class FlutterUserAgentPlugin implements MethodCallHandler {
   /** Plugin registration. */
-  public static void registerWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), "flutter_user_agent");
-    channel.setMethodCallHandler(new FlutterUserAgentPlugin(registrar.context()));
-  }
+  // public static void registerWith(FlutterPlugin.FlutterPluginBinding binding) {
+  //   final MethodChannel channel = new MethodChannel(binding.getBinaryMessenger(), "flutter_user_agent");
+  //   channel.setMethodCallHandler(new FlutterUserAgentPlugin(binding.getApplicationContext()));
+  // }
 
+  private MethodChannel channel;
+
+@Override
+public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "flutter_user_agent");
+    channel.setMethodCallHandler(this);
+}
+
+@Override
+public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+    channel.setMethodCallHandler(null);
+}
+
+
+ 
   private final Context context;
   private Map<String, Object> constants;
 
@@ -33,7 +49,7 @@ public class FlutterUserAgentPlugin implements MethodCallHandler {
   }
 
   @Override
-  public void onMethodCall(MethodCall call, Result result) {
+public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
     if (call.method.equals("getProperties")) {
       result.success(getProperties());
     } else {
